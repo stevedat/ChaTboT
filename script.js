@@ -26,7 +26,7 @@ async function output(input) {
     if (compare(prompts, replies, text)) {
         product = compare(prompts, replies, text);
     } else {
-        product = await fetchAIResponse(text);  // Call AI API if no match found
+        product = await fetchDeepSeekAI(text);  // Call AI API if no match found
     }
 
     addChat(input, product);
@@ -42,13 +42,23 @@ function compare(promptsArray, repliesArray, string) {
     return null;
 }
 
-async function fetchAIResponse(userMessage) {
+async function fetchDeepSeekAI(userMessage) {
     try {
-        const response = await fetch(`https://api.safone.dev/chat?message=${encodeURIComponent(userMessage)}`);
-        const data = await response.json();
-        console.log("API Response:", data);
-        
-        return data.response || "Sorry, I couldn't get an answer.";
+        const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: [{ role: "user", content: userMessage }],
+                temperature: 0.7,
+                max_tokens: 100
+            })
+        });
+
+        const result = await response.json();
+        console.log("API Response:", result);
+
+        return result.choices[0].message.content || "Sorry, I couldn't get an answer.";
     } catch (error) {
         console.error("Error fetching AI response:", error);
         return "Oops! Something went wrong. Try again.";
