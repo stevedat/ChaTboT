@@ -1,26 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatbot</title>
-    <link rel="icon" href="bot.png">
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <div id="container" class="container">
-        <div id="chat" class="chat">
-            <div id="messages" class="messages"></div>
-            <input id="input" type="text" placeholder="Say something..." autocomplete="off" autofocus>
-        </div>
-        <img src="bot.jpeg" alt="Robot cartoon" height="500">
+
+    <div id="chat-container">
+        <div id="messages"></div>
+        <input id="input" type="text" placeholder="Type a message..." autocomplete="off">
     </div>
 
-    <!-- Load JavaScript Files -->
-    <script type="text/javascript" src="constants.js" defer></script>
-    <script type="text/javascript" src="script.js" defer></script>
+    <script src="prompts.js"></script>
+    <script src="script.js"></script>
 </body>
-
 </html>
