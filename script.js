@@ -2,70 +2,42 @@ document.addEventListener("DOMContentLoaded", () => {
     const inputField = document.getElementById("input");
     inputField.addEventListener("keydown", (e) => {
         if (e.code === "Enter") {
-            let input = inputField.value.trim();
-            if (input !== "") {
-                inputField.value = "";
-                output(input);
-            }
+            let input = inputField.value;
+            inputField.value = "";
+            output(input);
         }
     });
 });
 
 async function output(input) {
-    let product;
-    
-    // Normalize input
-    let text = input.toLowerCase()
-        .replace(/[^\w\s]/gi, "") 
-        .replace(/[\d]/gi, "")
-        .trim();
+    addChat(input, "Thinking...");
 
-    console.log("User input after processing:", text);
-
-    // Check for predefined responses
-    if (compare(prompts, replies, text)) {
-        product = compare(prompts, replies, text);
-    } else {
-        product = await fetchDeepSeekAI(text);  // Call AI API if no match found
-    }
-
-    addChat(input, product);
-}
-
-function compare(promptsArray, repliesArray, string) {
-    for (let i = 0; i < promptsArray.length; i++) {
-        if (promptsArray[i].includes(string)) {
-            let replies = repliesArray[i];
-            return replies[Math.floor(Math.random() * replies.length)];
-        }
-    }
-    return null;
-}
-
-async function fetchDeepSeekAI(userMessage) {
     try {
-        const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+        const response = await fetch("https://cablyai.com/v1/chat/completions", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
-                model: "deepseek-chat",
-                messages: [{ role: "user", content: userMessage }],
+                model: "gpt-3.5-turbo",  // Adjust model as needed
+                messages: [{ role: "user", content: input }],
                 temperature: 0.7,
-                max_tokens: 100
+                max_tokens: 150
             })
         });
 
-        const result = await response.json();
-        console.log("API Response:", result);
+        const data = await response.json();
+        let botReply = data.choices?.[0]?.message?.content?.trim() || "I'm sorry, I didn't understand that.";
 
-        return result.choices[0].message.content || "Sorry, I couldn't get an answer.";
+        // Update the chat with AI response
+        updateLastBotMessage(botReply);
     } catch (error) {
         console.error("Error fetching AI response:", error);
-        return "Oops! Something went wrong. Try again.";
+        updateLastBotMessage("Oops! Something went wrong.");
     }
 }
 
-function addChat(input, product) {
+function addChat(input, botMessage) {
     const messagesContainer = document.getElementById("messages");
 
     let userDiv = document.createElement("div");
@@ -75,13 +47,15 @@ function addChat(input, product) {
 
     let botDiv = document.createElement("div");
     botDiv.className = "bot response";
-    botDiv.innerHTML = `<img src="bot-mini.png" class="avatar"><span>Thinking...</span>`;
+    botDiv.innerHTML = `<img src="bot-mini.png" class="avatar"><span>${botMessage}</span>`;
     messagesContainer.appendChild(botDiv);
 
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
 
-    // Simulate bot response delay
-    setTimeout(() => {
-        botDiv.querySelector("span").innerText = product;
-    }, 1500);
+function updateLastBotMessage(newText) {
+    const botMessages = document.querySelectorAll(".bot.response span");
+    if (botMessages.length > 0) {
+        botMessages[botMessages.length - 1].innerText = newText;
+    }
 }
