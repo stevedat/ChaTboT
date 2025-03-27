@@ -11,37 +11,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-function output(input) {
+async function output(input) {
     let product;
     
     // Normalize input
     let text = input.toLowerCase()
-        .replace(/[^\w\s]/gi, "")  // Remove non-word characters
-        .replace(/[\d]/gi, "")  // Remove digits
+        .replace(/[^\w\s]/gi, "") 
+        .replace(/[\d]/gi, "")
         .trim();
-
-    text = text
-        .replace(/ a /g, " ")
-        .replace(/i feel /g, "")
-        .replace(/whats/g, "what is")
-        .replace(/please /g, "")
-        .replace(/ please/g, "")
-        .replace(/r u/g, "are you");
 
     console.log("User input after processing:", text);
 
-    // Check for a response
+    // Check for predefined responses
     if (compare(prompts, replies, text)) {
         product = compare(prompts, replies, text);
-    } else if (text.match(/thank/gi)) {
-        product = "You're welcome!";
-    } else if (text.match(/(corona|covid|virus)/gi)) {
-        product = coronavirus[Math.floor(Math.random() * coronavirus.length)];
     } else {
-        product = alternative[Math.floor(Math.random() * alternative.length)];
+        product = await fetchAIResponse(text);  // Call AI API if no match found
     }
 
-    // Display in chat
     addChat(input, product);
 }
 
@@ -53,6 +40,19 @@ function compare(promptsArray, repliesArray, string) {
         }
     }
     return null;
+}
+
+async function fetchAIResponse(userMessage) {
+    try {
+        const response = await fetch("https://api.monkedev.com/fun/chat?msg=" + encodeURIComponent(userMessage));
+        const data = await response.json();
+        console.log("API Response:", data);
+        
+        return data.response || "Sorry, I couldn't get an answer.";
+    } catch (error) {
+        console.error("Error fetching AI response:", error);
+        return "Oops! Something went wrong. Try again.";
+    }
 }
 
 function addChat(input, product) {
