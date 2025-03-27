@@ -44,7 +44,7 @@ function compare(promptsArray, repliesArray, string) {
 
 async function fetchAIResponse(userMessage) {
     try {
-        const response = await fetch("https://api.monkedev.com/fun/chat?msg=" + encodeURIComponent(userMessage));
+        const response = await fetch(`https://api.safone.dev/chat?message=${encodeURIComponent(userMessage)}`);
         const data = await response.json();
         console.log("API Response:", data);
         
