@@ -1,23 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
     const inputField = document.getElementById("input");
     inputField.addEventListener("keydown", (e) => {
-        if (e.code === "Enter" && inputField.value.trim() !== "") {
+        if (e.code === "Enter") {
             let input = inputField.value.trim();
-            inputField.value = "";
-            output(input);
+            if (input !== "") {
+                inputField.value = "";
+                output(input);
+            }
         }
     });
 });
 
 function output(input) {
     let product;
-  
+    
+    // Normalize input
     let text = input.toLowerCase()
-        .replace(/[^\w\s]/gi, "") // Remove special characters
-        .replace(/[\d]/gi, "")    // Remove digits
+        .replace(/[^\w\s]/gi, "")  // Remove non-word characters
+        .replace(/[\d]/gi, "")  // Remove digits
         .trim();
 
-    // Replace common contractions and phrases
     text = text
         .replace(/ a /g, " ")
         .replace(/i feel /g, "")
@@ -26,20 +28,27 @@ function output(input) {
         .replace(/ please/g, "")
         .replace(/r u/g, "are you");
 
-    // Check for a match in predefined responses
-    product = compare(prompts, replies, text) 
-              || (text.match(/thank/gi) ? "You're welcome!" : null) 
-              || (text.match(/(corona|covid|virus)/gi) ? coronavirus[Math.floor(Math.random() * coronavirus.length)] : null) 
-              || alternative[Math.floor(Math.random() * alternative.length)];
+    console.log("User input after processing:", text);
 
-    // Update DOM
+    // Check for a response
+    if (compare(prompts, replies, text)) {
+        product = compare(prompts, replies, text);
+    } else if (text.match(/thank/gi)) {
+        product = "You're welcome!";
+    } else if (text.match(/(corona|covid|virus)/gi)) {
+        product = coronavirus[Math.floor(Math.random() * coronavirus.length)];
+    } else {
+        product = alternative[Math.floor(Math.random() * alternative.length)];
+    }
+
+    // Display in chat
     addChat(input, product);
 }
 
 function compare(promptsArray, repliesArray, string) {
-    for (let x = 0; x < promptsArray.length; x++) {
-        if (promptsArray[x].some(prompt => prompt.toLowerCase() === string)) {
-            let replies = repliesArray[x];
+    for (let i = 0; i < promptsArray.length; i++) {
+        if (promptsArray[i].includes(string)) {
+            let replies = repliesArray[i];
             return replies[Math.floor(Math.random() * replies.length)];
         }
     }
@@ -59,11 +68,10 @@ function addChat(input, product) {
     botDiv.innerHTML = `<img src="bot-mini.png" class="avatar"><span>Thinking...</span>`;
     messagesContainer.appendChild(botDiv);
 
-    // Auto-scroll to the latest message
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-    // Simulate response delay
+    // Simulate bot response delay
     setTimeout(() => {
         botDiv.querySelector("span").innerText = product;
-    }, 1000);
+    }, 1500);
 }
